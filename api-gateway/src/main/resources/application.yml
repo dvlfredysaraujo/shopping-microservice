@@ -1,0 +1,59 @@
+server:
+  port: 8080
+
+#Eureka client configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    # o bien explícitamente:
+    hostname: localhost
+
+#API Gateway configuration
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: API-GATEWAY
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          secret-key: myJwtSecretKeyThatShouldBeLongAndSecure
+  cloud:
+    gateway:
+      routes:
+        - id: product-service
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/api/products/**, /api/products
+        - id: order-service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/api/orders/**, /api/orders
+        - id: payment-service
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/payments/**, /api/payments
+      discovery:
+        server:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+  datasource:
+    url: jdbc:h2:mem:orderdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+jwt:
+  secret: myJwtSecretKeyThatShouldBeLongAndSecure
+  expiration: 3600000
+
+
